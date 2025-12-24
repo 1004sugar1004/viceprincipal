@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import Snowfall from './components/Snowfall.tsx';
 import Ornament from './components/Ornament.tsx';
@@ -7,7 +6,6 @@ import { Blessing } from './types.ts';
 
 const App: React.FC = () => {
   const [userName] = useState('홍성미 교감선생님');
-  const [isStarted, setIsStarted] = useState(false);
   const [clickedIndices, setClickedIndices] = useState<Set<number>>(new Set());
   const [currentBlessing, setCurrentBlessing] = useState<Blessing | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,32 +27,21 @@ const App: React.FC = () => {
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
 
+    // 사용자가 페이지의 어디든 클릭하면 배경음악 재생 시도 (브라우저 정책 대응)
+    const handleFirstInteraction = () => {
+      if (audio && audio.paused) {
+        audio.play().catch(() => {});
+      }
+      window.removeEventListener('click', handleFirstInteraction);
+    };
+    window.addEventListener('click', handleFirstInteraction);
+
     return () => {
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
+      window.removeEventListener('click', handleFirstInteraction);
     };
   }, []);
-
-  const handleStart = () => {
-    setIsStarted(true);
-    if (audioRef.current) {
-      audioRef.current.volume = 0.5;
-      const playPromise = audioRef.current.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setIsMusicPlaying(true);
-        }).catch(e => {
-          console.warn("Audio playback failed initially, will retry on interaction:", e);
-          const retryOnInteraction = () => {
-            audioRef.current?.play();
-            window.removeEventListener('click', retryOnInteraction);
-          };
-          window.addEventListener('click', retryOnInteraction);
-        });
-      }
-    }
-  };
 
   const handleOrnamentClick = (index: number) => {
     if (isLoading) return;
@@ -116,48 +103,29 @@ const App: React.FC = () => {
         crossOrigin="anonymous"
       />
 
-      {!isStarted && (
-        <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
-          <div className="text-center p-10 max-w-lg animate-in fade-in zoom-in duration-1000">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-[0.2em] drop-shadow-lg">
-              2026, 지혜의 시작
-            </h1>
-            <p className="text-white/80 text-lg mb-12 leading-relaxed italic">
-              "가을의 인연이 지혜의 숲이 되어<br/>선생님의 새해를 축복합니다."
-            </p>
-            <button 
-              onClick={handleStart}
-              className="px-12 py-4 bg-white/10 border border-white/30 text-white text-xl tracking-widest hover:bg-white/20 transition-all active:scale-95 shadow-2xl rounded-sm"
-            >
-              축복의 문 열기
-            </button>
-            <p className="mt-8 text-white/40 text-sm italic">음악과 함께 감상하시길 권장합니다</p>
-          </div>
-        </div>
-      )}
+      {/* 상단 컨트롤 */}
+      <div className="absolute top-6 right-6 z-50 flex gap-4">
+        <button 
+          onClick={toggleMusic}
+          className={`w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-transform hover:scale-110 ${isMusicPlaying ? 'animate-pulse' : ''}`}
+        >
+          {isMusicPlaying ? '🔊' : '🔇'}
+        </button>
+      </div>
 
-      {isStarted && (
-        <div className="absolute top-6 right-6 z-50 flex gap-4">
-          <button 
-            onClick={toggleMusic}
-            className={`w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-transform hover:scale-110 ${isMusicPlaying ? 'animate-pulse' : ''}`}
-          >
-            {isMusicPlaying ? '🔊' : '🔇'}
-          </button>
-        </div>
-      )}
-
-      {isStarted && clickedIndices.size > 0 && (
+      {/* 갤러리 버튼 */}
+      {clickedIndices.size > 0 && (
         <button 
           onClick={() => { setShowGallery(true); setGalleryViewIdx(null); }}
-          className="absolute bottom-10 right-10 z-[60] bg-white/20 backdrop-blur-xl border border-white/40 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-white/30 transition-all flex items-center gap-3 active:scale-95"
+          className="absolute bottom-10 right-10 z-[60] bg-white/20 backdrop-blur-xl border border-white/40 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-white/30 transition-all flex items-center gap-3 active:scale-95 animate-slide-in"
         >
           💌 지혜의 서재 열기
         </button>
       )}
 
+      {/* 메인 콘텐츠 영역 */}
       <div 
-        className={`relative z-10 flex flex-col items-center justify-center h-full px-4 transition-all duration-700 ${!isStarted || showGallery || currentBlessing ? 'blur-xl scale-95 opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`relative z-10 flex flex-col items-center justify-center h-full px-4 transition-all duration-700 ${showGallery || currentBlessing ? 'blur-xl scale-95 opacity-50' : 'opacity-100'}`}
       >
         <div className="text-center mb-4 z-40">
           <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] mb-3 tracking-widest">
@@ -179,6 +147,7 @@ const App: React.FC = () => {
             />
           ))}
           
+          {/* 전구 장식 효과 */}
           {Array.from({ length: 30 }).map((_, i) => (
             <div key={i} className="absolute w-1 h-1 bg-white rounded-full opacity-60 animate-pulse shadow-[0_0_8px_white]"
               style={{
@@ -191,6 +160,7 @@ const App: React.FC = () => {
         </div>
       </div>
 
+      {/* 메시지 팝업 */}
       {currentBlessing && (
         <div 
           onClick={() => setCurrentBlessing(null)}
@@ -223,6 +193,7 @@ const App: React.FC = () => {
         </div>
       )}
 
+      {/* 서재(갤러리) 모달 */}
       {showGallery && (
         <div className="fixed inset-0 z-[150] bg-black/95 flex items-center justify-center p-6">
           {galleryViewIdx === null ? (
@@ -282,6 +253,7 @@ const App: React.FC = () => {
         </div>
       )}
 
+      {/* 로딩 표시 */}
       {isLoading && (
         <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
           <p className="text-lg text-white font-medium tracking-[0.3em] animate-pulse italic">지혜의 문장을 여는 중...</p>

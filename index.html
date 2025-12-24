@@ -19,15 +19,6 @@
       width: 100vw;
       height: 100vh;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
     @keyframes snowfall {
       0% { transform: translateY(-10vh) translateX(0); }
       100% { transform: translateY(110vh) translateX(20px); }
@@ -48,9 +39,6 @@
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .animate-slide-in {
-      animation: slideIn 0.5s ease-out forwards;
-    }
   </style>
   <script type="importmap">
 {
@@ -65,12 +53,7 @@
 </script>
 </head>
 <body>
-  <div id="root">
-    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; background: #050505;">
-      <div class="loading-spinner" style="margin-bottom: 20px;"></div>
-      <p style="letter-spacing: 0.2em; font-size: 1.1rem; opacity: 0.8;">지혜의 숲을 불러오는 중...</p>
-    </div>
-  </div>
+  <div id="root"></div>
   <script type="module" src="./index.tsx"></script>
 </body>
 </html>
