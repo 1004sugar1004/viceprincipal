@@ -39,7 +39,12 @@ const App: React.FC = () => {
   const handleStart = () => {
     setIsStarted(true);
     if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log("Audio play blocked by browser", e));
+      audioRef.current.volume = 0.5;
+      audioRef.current.play().then(() => {
+        setIsMusicPlaying(true);
+      }).catch(e => {
+        console.warn("Audio play blocked by browser policy. Interaction needed.", e);
+      });
     }
   };
 
@@ -60,7 +65,7 @@ const App: React.FC = () => {
   const toggleMusic = () => {
     if (audioRef.current) {
       if (audioRef.current.paused) {
-        audioRef.current.play().catch(() => console.log("Music play blocked"));
+        audioRef.current.play();
       } else {
         audioRef.current.pause();
       }
@@ -111,7 +116,7 @@ const App: React.FC = () => {
               2026, 지혜의 시작
             </h1>
             <p className="text-white/80 text-lg mb-12 leading-relaxed italic">
-              "가을의 인연이 지혜의 숲이 되어<br/>당신의 새해를 축복합니다."
+              "가을의 인연이 지혜의 숲이 되어<br/>선생님의 새해를 축복합니다."
             </p>
             <button 
               onClick={handleStart}
@@ -147,7 +152,7 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <div 
-        className={`relative z-10 flex flex-col items-center justify-center h-full px-4 transition-all duration-700 ${!isStarted || showGallery || currentBlessing ? 'blur-xl scale-95 opacity-0' : 'opacity-100'}`}
+        className={`relative z-10 flex flex-col items-center justify-center h-full px-4 transition-all duration-700 ${!isStarted || showGallery || currentBlessing ? 'blur-xl scale-95 opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
         <div className="text-center mb-4 z-40">
           <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] mb-3 tracking-widest">
