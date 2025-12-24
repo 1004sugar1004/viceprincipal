@@ -39,12 +39,27 @@ const App: React.FC = () => {
   const handleStart = () => {
     setIsStarted(true);
     if (audioRef.current) {
-      audioRef.current.volume = 0.5;
-      audioRef.current.play().then(() => {
-        setIsMusicPlaying(true);
-      }).catch(e => {
-        console.warn("Audio play blocked by browser policy. Interaction needed.", e);
-      });
+      // Small delay to ensure state update and browser focus
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.volume = 0.5;
+          const playPromise = audioRef.current.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              setIsMusicPlaying(true);
+            }).catch(e => {
+              console.error("Audio playback failed:", e);
+              // Fallback: try playing again on any window click
+              const retryPlay = () => {
+                audioRef.current?.play();
+                window.removeEventListener('click', retryPlay);
+              };
+              window.addEventListener('click', retryPlay);
+            });
+          }
+        }
+      }, 100);
     }
   };
 
@@ -52,7 +67,6 @@ const App: React.FC = () => {
     if (isLoading) return;
     
     setIsLoading(true);
-    // Simulate a brief emotional pause
     setTimeout(() => {
       const blessing = PRE_GENERATED_BLESSINGS[index % PRE_GENERATED_BLESSINGS.length];
       setCurrentBlessing(blessing);
@@ -65,7 +79,7 @@ const App: React.FC = () => {
   const toggleMusic = () => {
     if (audioRef.current) {
       if (audioRef.current.paused) {
-        audioRef.current.play();
+        audioRef.current.play().catch(console.error);
       } else {
         audioRef.current.pause();
       }
@@ -106,12 +120,13 @@ const App: React.FC = () => {
         loop 
         src="https://ik.imagekit.io/foefnjeua/jazz-christmas-432315.mp3" 
         preload="auto"
+        crossOrigin="anonymous"
       />
 
       {/* Landing Overlay (Ensures Audio Activation) */}
       {!isStarted && (
-        <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-700">
-          <div className="text-center p-10 max-w-lg">
+        <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
+          <div className="text-center p-10 max-w-lg animate-in fade-in zoom-in duration-1000">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-[0.2em] drop-shadow-lg">
               2026, 지혜의 시작
             </h1>
@@ -191,7 +206,7 @@ const App: React.FC = () => {
       {currentBlessing && (
         <div 
           onClick={() => setCurrentBlessing(null)}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/85 backdrop-blur-sm animate-in fade-in duration-300"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/85 backdrop-blur-sm"
         >
           <div 
             onClick={e => e.stopPropagation()}
@@ -280,9 +295,8 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Small Emotion Overlay */}
       {isLoading && (
-        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300">
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
           <p className="text-lg text-white font-medium tracking-[0.3em] animate-pulse italic">지혜의 문장을 여는 중...</p>
         </div>
       )}
