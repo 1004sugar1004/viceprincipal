@@ -100,7 +100,6 @@ const App: React.FC = () => {
   const letterCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // 사용자가 첫 클릭을 할 때 오디오 재생을 시도합니다.
     const handleFirstInteraction = () => {
       if (audioRef.current && audioRef.current.paused) {
         audioRef.current.play().then(() => {
@@ -159,8 +158,8 @@ const App: React.FC = () => {
       {/* Main UI */}
       <div className={`relative z-10 flex flex-col items-center justify-center h-full transition-all duration-700 ${showGallery || currentBlessing ? 'blur-xl scale-95 opacity-50' : 'opacity-100'}`}>
         <div className="text-center mb-8 px-4">
-          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl mb-3 tracking-widest animate-slide-in">2026, 새로운 시작</h1>
-          <p className="text-white/80 text-sm tracking-widest drop-shadow-md">오너먼트를 눌러 {userName}께 드리는 지혜를 확인하세요</p>
+          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl mb-3 tracking-widest">2026, 새로운 시작</h1>
+          <p className="text-white/80 text-sm tracking-widest">오너먼트를 눌러 {userName}께 드리는 지혜를 확인하세요</p>
         </div>
 
         <div className="relative h-[65vh] aspect-[0.7] flex items-center justify-center">
