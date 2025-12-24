@@ -75,7 +75,7 @@ const Snowfall: React.FC = () => {
 };
 
 const GiftBox: React.FC<{ color: string }> = ({ color }) => (
-  <div className="relative w-1/2 h-[45%] flex flex-col items-center justify-end drop-shadow-lg scale-75 md:scale-90">
+  <div className="relative w-1/2 h-[45%] flex flex-col items-center justify-end drop-shadow-lg scale-75 md:scale-90 pointer-events-none">
     <div className="absolute top-[10%] w-[110%] h-[25%] rounded-[2px] z-[3] shadow-md" style={{ background: `linear-gradient(to right, ${color}, white 50%, ${color})` }} />
     <div className="absolute top-[-15%] w-[40%] h-[25%] flex justify-center z-[4]">
       <div className="w-1/2 h-full bg-[#ffeb3b] rounded-l-full -rotate-12" />
@@ -100,9 +100,12 @@ const App: React.FC = () => {
   const letterCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // 사용자가 첫 클릭을 할 때 오디오 재생을 시도합니다.
     const handleFirstInteraction = () => {
       if (audioRef.current && audioRef.current.paused) {
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().then(() => {
+          setIsMusicPlaying(true);
+        }).catch(() => {});
       }
       window.removeEventListener('click', handleFirstInteraction);
     };
@@ -112,9 +115,12 @@ const App: React.FC = () => {
 
   const toggleMusic = () => {
     if (audioRef.current) {
-      if (audioRef.current.paused) audioRef.current.play().catch(console.error);
-      else audioRef.current.pause();
-      setIsMusicPlaying(!audioRef.current.paused);
+      if (audioRef.current.paused) {
+        audioRef.current.play().then(() => setIsMusicPlaying(true)).catch(console.error);
+      } else {
+        audioRef.current.pause();
+        setIsMusicPlaying(false);
+      }
     }
   };
 
@@ -135,26 +141,26 @@ const App: React.FC = () => {
     <div className="relative h-screen w-screen bg-cover bg-center bg-no-repeat overflow-hidden"
       style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(https://i.imgur.com/ccQbw2H.png)' }}>
       <Snowfall />
-      <audio ref={audioRef} loop src="https://ik.imagekit.io/foefnjeua/jazz-christmas-432315.mp3" preload="auto" />
+      <audio ref={audioRef} loop src="https://ik.imagekit.io/foefnjeua/jazz-christmas-432315.mp3" preload="auto" crossOrigin="anonymous" />
 
       {/* Music Toggle */}
-      <button onClick={toggleMusic} className="absolute top-6 right-6 z-50 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center">
+      <button onClick={toggleMusic} className="absolute top-6 right-6 z-50 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95">
         {isMusicPlaying ? '🔊' : '🔇'}
       </button>
 
       {/* Gallery Button */}
       {clickedIndices.size > 0 && (
         <button onClick={() => { setShowGallery(true); setGalleryViewIdx(null); }}
-          className="absolute bottom-10 right-10 z-[60] bg-white/20 backdrop-blur-xl border border-white/40 text-white px-6 py-3 rounded-full shadow-2xl animate-slide-in">
+          className="absolute bottom-10 right-10 z-[60] bg-white/20 backdrop-blur-xl border border-white/40 text-white px-6 py-3 rounded-full shadow-2xl animate-slide-in hover:bg-white/30 transition-all active:scale-95">
           💌 지혜의 서재
         </button>
       )}
 
       {/* Main UI */}
       <div className={`relative z-10 flex flex-col items-center justify-center h-full transition-all duration-700 ${showGallery || currentBlessing ? 'blur-xl scale-95 opacity-50' : 'opacity-100'}`}>
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-xl mb-3 tracking-widest">2026, 새로운 시작</h1>
-          <p className="text-white/80 text-sm tracking-widest">오너먼트를 눌러 {userName}께 드리는 지혜를 확인하세요</p>
+        <div className="text-center mb-8 px-4">
+          <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl mb-3 tracking-widest animate-slide-in">2026, 새로운 시작</h1>
+          <p className="text-white/80 text-sm tracking-widest drop-shadow-md">오너먼트를 눌러 {userName}께 드리는 지혜를 확인하세요</p>
         </div>
 
         <div className="relative h-[65vh] aspect-[0.7] flex items-center justify-center">
@@ -163,13 +169,28 @@ const App: React.FC = () => {
               setCurrentBlessing(PRE_GENERATED_BLESSINGS[idx]);
               setClickedIndices(new Set(clickedIndices).add(idx));
             }}
-            className="absolute cursor-pointer z-30 transition-transform hover:scale-110"
+            className="absolute cursor-pointer z-30 transition-all hover:scale-125 group"
             style={{ top: config.top, left: config.left, animation: `swing 4s ease-in-out infinite ${idx * 0.3}s` }}>
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg"
-                style={{ background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9) 0%, ${config.color} 40%, rgba(0,0,0,0.4) 100%)`, boxShadow: `0 0 15px ${config.glow}` }}>
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg transition-shadow group-hover:shadow-[0_0_25px_rgba(255,255,255,0.8)]"
+                style={{ 
+                  background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9) 0%, ${config.color} 40%, rgba(0,0,0,0.4) 100%)`, 
+                  boxShadow: `0 0 15px ${config.glow}` 
+                }}>
                 <GiftBox color={GIFT_BOX_COLORS[idx % GIFT_BOX_COLORS.length]} />
               </div>
             </div>
+          ))}
+          
+          {/* 전구 장식 효과 */}
+          {Array.from({ length: 25 }).map((_, i) => (
+            <div key={i} className="absolute w-1 h-1 bg-white rounded-full opacity-60 animate-pulse"
+              style={{
+                top: `${15 + Math.random() * 65}%`,
+                left: `${35 + Math.random() * 30}%`,
+                boxShadow: '0 0 8px white',
+                animationDelay: `${Math.random() * 2}s`
+              }}
+            />
           ))}
         </div>
       </div>
@@ -179,11 +200,11 @@ const App: React.FC = () => {
         <div onClick={() => setCurrentBlessing(null)} className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
           <div onClick={e => e.stopPropagation()} className="bg-[#fffcf5] w-full max-w-md rounded-sm shadow-2xl p-10 md:p-12 text-slate-800 border border-[#dcdcdc] animate-slide-in">
             <div className="text-center mb-6">
-              <div className="text-4xl mb-4">{currentBlessing.emoji}</div>
+              <div className="text-4xl mb-4 text-[#b8860b]">{currentBlessing.emoji}</div>
               <h2 className="text-xl md:text-2xl font-bold border-b border-[#eee] pb-4 tracking-widest text-slate-900">To. {userName}</h2>
             </div>
             <p className="text-lg md:text-xl leading-[2] text-left whitespace-pre-line break-keep font-medium text-slate-700 italic mb-8">"{currentBlessing.content}"</p>
-            <button onClick={() => setCurrentBlessing(null)} className="w-full py-4 bg-[#1a1a1a] text-white font-medium hover:opacity-90 tracking-widest">마음에 새기겠습니다 🙏</button>
+            <button onClick={() => setCurrentBlessing(null)} className="w-full py-4 bg-[#1a1a1a] text-white font-medium hover:opacity-90 tracking-widest transition-opacity">마음에 새기겠습니다 🙏</button>
           </div>
         </div>
       )}
@@ -196,13 +217,13 @@ const App: React.FC = () => {
               <h2 className="text-2xl font-bold text-slate-900 mb-8 border-b-2 border-slate-900 pb-2 tracking-[0.2em]">{userName}의 서재</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full">
                 {Array.from(clickedIndices).map(idx => (
-                  <div key={idx} onClick={() => setGalleryViewIdx(idx)} className="bg-slate-50 p-6 flex flex-col items-center cursor-pointer border border-slate-200 hover:bg-slate-100 transition-all">
-                    <div className="text-3xl mb-2">📜</div>
+                  <div key={idx} onClick={() => setGalleryViewIdx(idx)} className="bg-slate-50 p-6 flex flex-col items-center cursor-pointer border border-slate-200 hover:bg-slate-100 transition-all group">
+                    <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📜</div>
                     <span className="text-xs text-slate-500 font-bold">{idx + 1}번째 지혜</span>
                   </div>
                 ))}
               </div>
-              <button onClick={() => setShowGallery(false)} className="mt-10 px-10 py-3 border border-slate-300 text-slate-600 tracking-widest">서재 나가기</button>
+              <button onClick={() => setShowGallery(false)} className="mt-10 px-10 py-3 border border-slate-300 text-slate-600 tracking-widest hover:bg-slate-50 transition-all">서재 나가기</button>
             </div>
           ) : (
             <div className="flex flex-col items-center w-full max-w-lg animate-slide-in">
@@ -212,8 +233,8 @@ const App: React.FC = () => {
                 <div className="mt-10 text-right text-slate-400 text-sm italic">2026년 정월, {userName}을 존경하며</div>
               </div>
               <div className="flex gap-4 mt-8 w-full">
-                <button onClick={handleSaveImage} className="flex-1 py-4 bg-white text-slate-900 font-bold tracking-widest">저장 📸</button>
-                <button onClick={() => setGalleryViewIdx(null)} className="flex-1 py-4 border-2 border-white text-white font-bold tracking-widest">목록</button>
+                <button onClick={handleSaveImage} className="flex-1 py-4 bg-white text-slate-900 font-bold tracking-widest border-2 border-white hover:bg-slate-100 transition-all">저장 📸</button>
+                <button onClick={() => setGalleryViewIdx(null)} className="flex-1 py-4 border-2 border-white text-white font-bold tracking-widest hover:bg-white/10 transition-all">목록</button>
               </div>
             </div>
           )}
