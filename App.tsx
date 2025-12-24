@@ -1,9 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import Snowfall from './components/Snowfall';
-import Ornament from './components/Ornament';
-import { ORNAMENT_CONFIGS, PRE_GENERATED_BLESSINGS } from './constants';
-import { Blessing } from './types';
+import Snowfall from './components/Snowfall.tsx';
+import Ornament from './components/Ornament.tsx';
+import { ORNAMENT_CONFIGS, PRE_GENERATED_BLESSINGS } from './constants.tsx';
+import { Blessing } from './types.ts';
 
 const App: React.FC = () => {
   const [userName] = useState('홍성미 교감선생님');
@@ -19,7 +19,6 @@ const App: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const letterCardRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync music state with actual audio element
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -39,27 +38,21 @@ const App: React.FC = () => {
   const handleStart = () => {
     setIsStarted(true);
     if (audioRef.current) {
-      // Small delay to ensure state update and browser focus
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.volume = 0.5;
-          const playPromise = audioRef.current.play();
-          
-          if (playPromise !== undefined) {
-            playPromise.then(() => {
-              setIsMusicPlaying(true);
-            }).catch(e => {
-              console.error("Audio playback failed:", e);
-              // Fallback: try playing again on any window click
-              const retryPlay = () => {
-                audioRef.current?.play();
-                window.removeEventListener('click', retryPlay);
-              };
-              window.addEventListener('click', retryPlay);
-            });
-          }
-        }
-      }, 100);
+      audioRef.current.volume = 0.5;
+      const playPromise = audioRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsMusicPlaying(true);
+        }).catch(e => {
+          console.warn("Audio playback failed initially, will retry on interaction:", e);
+          const retryOnInteraction = () => {
+            audioRef.current?.play();
+            window.removeEventListener('click', retryOnInteraction);
+          };
+          window.addEventListener('click', retryOnInteraction);
+        });
+      }
     }
   };
 
@@ -101,7 +94,7 @@ const App: React.FC = () => {
       link.download = `Letter_for_${userName}.png`;
       link.click();
     } catch (err) {
-      console.error("이미지 저장 실패:", err);
+      console.error("Image saving failed:", err);
       alert("이미지 저장 중 오류가 발생했습니다.");
     }
   };
@@ -123,7 +116,6 @@ const App: React.FC = () => {
         crossOrigin="anonymous"
       />
 
-      {/* Landing Overlay (Ensures Audio Activation) */}
       {!isStarted && (
         <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
           <div className="text-center p-10 max-w-lg animate-in fade-in zoom-in duration-1000">
@@ -144,7 +136,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* UI Controls */}
       {isStarted && (
         <div className="absolute top-6 right-6 z-50 flex gap-4">
           <button 
@@ -165,7 +156,6 @@ const App: React.FC = () => {
         </button>
       )}
 
-      {/* Main Content */}
       <div 
         className={`relative z-10 flex flex-col items-center justify-center h-full px-4 transition-all duration-700 ${!isStarted || showGallery || currentBlessing ? 'blur-xl scale-95 opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
@@ -189,7 +179,6 @@ const App: React.FC = () => {
             />
           ))}
           
-          {/* Sparkles */}
           {Array.from({ length: 30 }).map((_, i) => (
             <div key={i} className="absolute w-1 h-1 bg-white rounded-full opacity-60 animate-pulse shadow-[0_0_8px_white]"
               style={{
@@ -202,7 +191,6 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Blessing Modal */}
       {currentBlessing && (
         <div 
           onClick={() => setCurrentBlessing(null)}
@@ -235,7 +223,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Gallery Modal */}
       {showGallery && (
         <div className="fixed inset-0 z-[150] bg-black/95 flex items-center justify-center p-6">
           {galleryViewIdx === null ? (

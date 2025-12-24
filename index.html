@@ -1,13 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2026 New Year Blessing</title>
+  <title>2026 새해 축복 - 홍성미 교감선생님</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
-  <!-- html2canvas for saving images -->
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     body {
@@ -15,7 +13,20 @@
       padding: 0;
       overflow: hidden;
       font-family: 'Nanum Myeongjo', serif;
-      background-color: #000;
+      background-color: #050505;
+    }
+    #root {
+      width: 100vw;
+      height: 100vh;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
     @keyframes snowfall {
       0% { transform: translateY(-10vh) translateX(0); }
@@ -26,7 +37,6 @@
       top: -10vh;
       color: white;
       pointer-events: none;
-      user-select: none;
       z-index: 1;
       animation: snowfall linear infinite;
     }
@@ -42,17 +52,45 @@
       animation: slideIn 0.5s ease-out forwards;
     }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3"
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; background: #050505;">
+      <div class="loading-spinner" style="margin-bottom: 20px;"></div>
+      <p style="letter-spacing: 0.2em; font-size: 1.1rem; opacity: 0.8;">지혜의 숲을 불러오는 중...</p>
+      <noscript>
+        <p style="margin-top: 20px; color: #ff6b6b;">자바스크립트가 비활성화되어 있습니다. 브라우저 설정을 확인해주세요.</p>
+      </noscript>
+    </div>
+  </div>
+  <script type="module" src="./index.tsx"></script>
+  <script>
+    // 전역 에러 핸들러: 검은 화면 문제 진단용
+    window.addEventListener('error', function(event) {
+      if (event.filename && event.filename.includes('index.tsx')) {
+        const root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = `
+            <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ff6b6b; text-align: center; padding: 20px;">
+              <p style="font-size: 1.2rem; margin-bottom: 10px;">⚠️ 앱 실행 중 오류가 발생했습니다.</p>
+              <code style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px; font-size: 0.8rem;">${event.message}</code>
+              <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: white; color: black; border: none; cursor: pointer;">새로고침</button>
+            </div>
+          `;
+        }
+      }
+    });
+  </script>
 </body>
 </html>
